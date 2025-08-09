@@ -1,0 +1,9 @@
+/vendor/
+composer.lock
+/node_modules/
+.env
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
