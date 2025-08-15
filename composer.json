@@ -3,7 +3,8 @@
   "description": "Website hỗ trợ doanh nghiệp thu mua phế liệu",
   "type": "project",
   "require": {
-    "php": "^8.0"
+    "php": ">=7.4",
+    "vlucas/phpdotenv": "^5.5"
   },
   "autoload": {
     "psr-4": {

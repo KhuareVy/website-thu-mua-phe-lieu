@@ -1,47 +1,42 @@
 <?php
 namespace App\Core;
 
-class Router {
-    private $routes = [];
-    private $basePath;
+class Router
+{
+    private array $routes = [];
 
-    public function __construct($basePath = '') {
-        $this->basePath = rtrim($basePath, '/');
+    public function get(string $path, $callback)
+    {
+        $this->routes['GET'][$path] = $callback;
     }
 
-    public function get($uri, $action) {
-        $this->routes['GET'][$uri] = $action;
+    public function post(string $path, $callback)
+    {
+        $this->routes['POST'][$path] = $callback;
     }
 
-    public function post($uri, $action) {
-        $this->routes['POST'][$uri] = $action;
-    }
+    public function resolve(Request $request)
+    {
+        $path = $request->getPath();
+        $method = $request->getMethod();
+        $callback = $this->routes[$method][$path] ?? null;
 
-    public function run() {
-        $method = $_SERVER['REQUEST_METHOD'];
-        $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-
-        // Loại bỏ basePath nếu có
-        if ($this->basePath && strpos($uri, $this->basePath) === 0) {
-            $uri = substr($uri, strlen($this->basePath));
-        }
-
-        if ($uri === '') $uri = '/';
-
-        $action = $this->routes[$method][$uri] ?? null;
-
-        if ($action === null) {
+        if (!$callback) {
             http_response_code(404);
-            echo "404 Not Found";
-            exit;
+            return "404 Not Found";
         }
 
-        if (is_callable($action)) {
-            call_user_func($action);
-        } elseif (is_array($action)) {
-            $controller = new $action[0]();
-            $method = $action[1];
-            $controller->$method();
+        // Nếu là array [Controller::class, 'method']
+        if (is_array($callback)) {
+            $controller = new $callback[0]();
+            return call_user_func([$controller, $callback[1]], $request);
         }
+
+        // Nếu là callback function
+        if (is_callable($callback)) {
+            return call_user_func($callback, $request);
+        }
+
+        throw new \Exception("Invalid route callback");
     }
 }

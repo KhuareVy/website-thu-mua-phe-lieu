@@ -1,74 +1,53 @@
 <?php
 namespace App\Controllers;
 
-use App\Models\User;
+use App\Models\UserModel;
 
 class AuthController {
-    public function showRegisterForm() {
-        include_once __DIR__ . '/../Views/auth/register.php';
+    private $userModel;
+
+    public function __construct($config) {
+        $this->userModel = new UserModel($config);
     }
 
-    public function register() {
-        $name = trim($_POST['name'] ?? '');
-        $email = trim($_POST['email'] ?? '');
-        $password = $_POST['password'] ?? '';
-        $passwordConfirm = $_POST['password_confirm'] ?? '';
-
-        if ($password !== $passwordConfirm) {
-            $_SESSION['error'] = 'Mật khẩu không khớp.';
-            header('Location: /register');
-            exit;
+    public function register($data) {
+        if (empty($data['name']) || empty($data['password'])) {
+            return ['error' => 'Vui lòng điền đầy đủ thông tin'];
         }
 
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $_SESSION['error'] = 'Email không hợp lệ.';
-            header('Location: /register');
-            exit;
+        if ($this->userModel->findByName($data['name'])) {
+            return ['error' => 'Tên người dùng đã tồn tại'];
         }
 
-        if (User::findByEmail($email)) {
-            $_SESSION['error'] = 'Email đã được đăng ký.';
-            header('Location: /register');
-            exit;
+        if ($this->userModel->create($data['name'], $data['password'])) {
+            return ['success' => 'Đăng ký thành công!'];
         }
 
-        $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
-
-        $user = new User();
-        $user->name = $name;
-        $user->email = $email;
-        $user->password = $hashedPassword;
-        $user->save();
-
-        $_SESSION['success'] = 'Đăng ký thành công. Vui lòng đăng nhập.';
-        header('Location: /login');
-        exit;
+        return ['error' => 'Đã xảy ra lỗi, thử lại sau'];
     }
 
-    public function showLoginForm() {
-        include_once __DIR__ . '/../Views/auth/login.php';
-    }
-
-    public function login() {
-        $email = trim($_POST['email'] ?? '');
-        $password = $_POST['password'] ?? '';
-
-        $user = User::findByEmail($email);
-
-        if (!$user || !password_verify($password, $user->password)) {
-            $_SESSION['error'] = 'Email hoặc mật khẩu không đúng.';
-            header('Location: /login');
-            exit;
+    public function login($data) {
+        if (empty($data['name']) || empty($data['password'])) {
+            return ['error' => 'Vui lòng điền đầy đủ thông tin'];
         }
 
-        $_SESSION['user_id'] = $user->id;
-        $_SESSION['user_name'] = $user->name;
+        $user = $this->userModel->findByName($data['name']);
+        if (!$user || !password_verify($data['password'], $user['password'])) {
+            return ['error' => 'Tên đăng nhập hoặc mật khẩu không đúng'];
+        }
 
-        header('Location: /');
-        exit;
+        session_start();
+        $_SESSION['user'] = [
+            'id' => $user['id'],
+            'name' => $user['name'],
+            'role' => $user['role']
+        ];
+
+        return ['success' => 'Đăng nhập thành công!'];
     }
 
     public function logout() {
+        session_start();
         session_destroy();
         header('Location: /login');
         exit;
