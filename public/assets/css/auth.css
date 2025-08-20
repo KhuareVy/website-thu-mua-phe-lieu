@@ -1,0 +1,99 @@
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #f4f6fb;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+/* Form Container */
+.form-container {
+  width: 350px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  padding: 32px 28px 24px 28px;
+}
+
+/* Tiêu đề */
+.form-container h1 {
+  text-align: center;
+  margin-bottom: 24px;
+  color: #2d3748;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+/* Input chung */
+.form-container form input[type='text'],
+.form-container form input[type='email'],
+.form-container form input[type='password'] {
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 1rem;
+  background: #f9fafb;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.form-container form input:focus {
+  border-color: #3182ce;
+  outline: none;
+  background: #fff;
+}
+
+/* Nút submit */
+.form-container button[type='submit'] {
+  width: 100%;
+  padding: 10px 0;
+  background: linear-gradient(90deg, #3182ce 0%, #63b3ed 100%);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.form-container button[type='submit']:hover {
+  background: linear-gradient(90deg, #2563eb 0%, #4299e1 100%);
+}
+
+/* Link dưới form */
+.form-container .form-link {
+  display: block;
+  text-align: center;
+  margin-top: 14px;
+  color: #3182ce;
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: color 0.2s;
+}
+
+.form-container .form-link:hover {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+/* Thông báo lỗi */
+.form-container .error-message {
+  color: #e53e3e;
+  background: #fff5f5;
+  border: 1px solid #fed7d7;
+  border-radius: 5px;
+  padding: 8px 12px;
+  margin-bottom: 14px;
+  font-size: 0.95rem;
+  text-align: center;
+}
