@@ -574,7 +574,7 @@ header.hide-header {
 .reason-box p {
   font-size: 14px;
   line-height: 1.7;
-  color: var(--text-light);
+  color: var(--text-dark);
   opacity: 0.9;
 }
 

@@ -17,12 +17,10 @@ class AuthController extends Controller
     {
         $data = $request->getBody();
 
-        // Validation cơ bản
         if (empty($data['name']) || empty($data['email']) || empty($data['phone']) || empty($data['password'])) {
             return $this->view('auth/register', ['error' => 'Vui lòng điền đầy đủ thông tin']);
         }
 
-        // Kiểm tra định dạng số điện thoại (chỉ số, 10-15 ký tự)
         if (!preg_match('/^[0-9]{10,15}$/', $data['phone'])) {
             return $this->view('auth/register', ['error' => 'Số điện thoại không hợp lệ']);
         }
@@ -37,7 +35,7 @@ class AuthController extends Controller
 
         $userModel->create($data);
 
-        $this->redirect('/login');
+        (new Response())->redirect('/login');
     }
 
     public function showLogin()
@@ -60,12 +58,12 @@ class AuthController extends Controller
         $_SESSION['user_name'] = $user['name'];
         $_SESSION['user_role'] = $user['role'];
 
-        $this->redirect('/');
+        (new Response())->redirect('/');
     }
 
     public function logout()
     {
         session_destroy();
-        $this->redirect('/login');
+        (new Response())->redirect('/login');
     }
 }

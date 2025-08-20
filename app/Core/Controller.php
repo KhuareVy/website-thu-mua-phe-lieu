@@ -13,7 +13,8 @@ class Controller
     protected function view(string $view, array $data = [])
     {
         extract($data);
-        require dirname(__DIR__) . "/Views/$view.php";
+        $contentView = dirname(__DIR__) . "/Views/$view.php";
+        require dirname(__DIR__) . "/Views/layouts/default/main.php";
     }
 
     protected function redirect(string $url)
