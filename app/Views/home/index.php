@@ -189,9 +189,16 @@ Nhà máy phế liệu Minh Hải Khương nhận mua phế liệu miền Nam ra
     </section>
 
 <div class="floating-sidebar">
-    <a href="/login" class="float-btn">🔑 Đăng nhập</a>
-    <a href="/register" class="float-btn">📝 Đăng ký</a>
-    <a href="account" class="float-btn">👤 Tài khoản</a>
+    <?php if (isset($_SESSION['user_id'])): ?>
+        <a href="/post/create" class="float-btn">📝 Đăng bài</a>
+        <a href="/buy" class="float-btn">💸 Mua phế liệu</a>
+        <a href="#account" class="float-btn">👤 <?= htmlspecialchars($_SESSION['user_name']) ?></a>
+        <a href="/logout" class="float-btn">🔑 Đăng xuất</a>
+    <?php else: ?>
+        <a href="/login" class="float-btn">🔑 Đăng nhập</a>
+        <a href="/register" class="float-btn">📝 Đăng ký</a>
+        <a href="#account" class="float-btn">👤 Tài khoản</a>
+    <?php endif; ?>
 </div>
 
 

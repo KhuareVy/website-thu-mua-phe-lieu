@@ -52,8 +52,6 @@ class AuthController extends Controller
         if (!$user || !password_verify($data['password'], $user['password'])) {
             return $this->view('auth/login', ['error' => 'Email hoặc mật khẩu không đúng']);
         }
-
-        // Lưu session
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['user_name'] = $user['name'];
         $_SESSION['user_role'] = $user['role'];
@@ -63,7 +61,8 @@ class AuthController extends Controller
 
     public function logout()
     {
+        unset($_SESSION['user']);
         session_destroy();
-        (new Response())->redirect('/login');
+        (new Response())->redirect('/register');
     }
 }
