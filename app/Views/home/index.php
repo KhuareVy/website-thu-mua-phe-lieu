@@ -1,8 +1,19 @@
 <!-- Nội dung trang chủ, KHÔNG có thẻ html/head/body, chỉ include vào layout -->
+<section class="banner" aria-labelledby="hero-title">
+  <div class="banner-content">
+    <h2 class="h2_t">CÔNG TY THU MUA PHẾ LIỆU GIÁ CAO</h2>
+    <h1 id="hero-title">MINH HẢI KHƯƠNG</h1>
+    <p class="highlight">Hoa hồng tích lũy lên tới <strong>1 TỶ ĐỒNG</strong></p>
+    <a href="tel:0971519789" class="cta-button" aria-label="Gọi điện ngay để được tư vấn">
+      <span aria-hidden="true">📞</span> GỌI NGAY
+    </a>
+  </div>
+</section>
     <!-- Nội dung trang chủ (home) -->
-      <h2 id="why-choose-title">
-        TẠI SAO CHỌN <span>CÔNG TY THU MUA PHẾ LIỆU GIÁ CAO MINH HẢI KHƯƠNG</span>
-      </h2>
+<section class="why-choose" aria-labelledby="why-choose-title">
+  <h2 id="why-choose-title">
+    TẠI SAO CHỌN <span>CÔNG TY THU MUA PHẾ LIỆU GIÁ CAO MINH HẢI KHƯƠNG</span>
+  </h2>
       <div class="reasons">
         <article class="reason-box">
           <div class="icon" aria-hidden="true">⏱️</div>

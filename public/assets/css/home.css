@@ -1,3 +1,6 @@
+main {
+  padding-top: 130px; /* Điều chỉnh đúng chiều cao header thực tế */
+}
 :root {
   --orange: #ff6600;
   --orange-light: #ff8533;
@@ -574,7 +577,7 @@ header.hide-header {
 .reason-box p {
   font-size: 14px;
   line-height: 1.7;
-  color: var(--text-dark);
+  color: var(--text-light);
   opacity: 0.9;
 }
 
