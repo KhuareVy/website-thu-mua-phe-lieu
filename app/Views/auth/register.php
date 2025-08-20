@@ -13,6 +13,7 @@
         <form method="POST" action="/register">
             <input type="text" name="name" placeholder="Tên" required>
             <input type="email" name="email" placeholder="Email" required>
+            <input type="text" name="phone" placeholder="Số điện thoại" required pattern="[0-9]{10,15}" title="Số điện thoại hợp lệ từ 10-15 số">
             <input type="password" name="password" placeholder="Mật khẩu" required>
             <button type="submit">Đăng ký</button>
         </form>
