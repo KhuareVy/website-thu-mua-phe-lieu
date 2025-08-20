@@ -63,6 +63,6 @@ class AuthController extends Controller
     {
         unset($_SESSION['user']);
         session_destroy();
-        (new Response())->redirect('/register');
+        (new Response())->redirect('/');
     }
 }

@@ -1,24 +1,33 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng ký</title>
-    <link rel="stylesheet" href="../../assets/css/auth.css">
-</head>
-<body>
-    <div class="form-container">
-        <h1>Đăng ký</h1>
-        <?php if(!empty($error)) echo "<div class='error-message'>" . htmlspecialchars($error) . "</div>"; ?>
-        <form method="POST" action="/register">
-            <input type="text" name="name" placeholder="Tên" required>
-            <input type="email" name="email" placeholder="Email" required>
-            <input type="text" name="phone" placeholder="Số điện thoại" required pattern="[0-9]{10,15}" title="Số điện thoại hợp lệ từ 10-15 số">
-            <input type="password" name="password" placeholder="Mật khẩu" required>
-            <button type="submit">Đăng ký</button>
-        </form>
-        <a class="form-link" href="/login">Đã có tài khoản? Đăng nhập</a>
+<!-- CSS -->
+<link rel="stylesheet" href="/assets/css/auth.css">
+<div class="auth-wrapper">
+    <div class="auth-content">
+        <div class="form-container">
+            <h1 class="form-title">Đăng ký</h1>
+            <?php if(!empty($error)) echo "<div class='error-message'>" . htmlspecialchars($error) . "</div>"; ?>
+            <form method="POST" action="/register" autocomplete="on">
+                <div class="input-group">
+                    <label for="name"><i class="fa fa-user"></i> Họ và tên</label>
+                    <input type="text" id="name" name="name" placeholder="Nhập họ và tên" required>
+                </div>
+                <div class="input-group">
+                    <label for="email"><i class="fa fa-envelope"></i> Email</label>
+                    <input type="email" id="email" name="email" placeholder="Nhập email" required>
+                </div>
+                <div class="input-group">
+                    <label for="phone"><i class="fa fa-phone"></i> Số điện thoại</label>
+                    <input type="text" id="phone" name="phone" placeholder="Nhập số điện thoại" required pattern="[0-9]{10,15}" title="Số điện thoại hợp lệ từ 10-15 số">
+                </div>
+                <div class="input-group">
+                    <label for="password"><i class="fa fa-lock"></i> Mật khẩu</label>
+                    <input type="password" id="password" name="password" placeholder="Nhập mật khẩu" required>
+                </div>
+                <button type="submit" class="btn-main">Đăng ký</button>
+            </form>
+            <div class="form-bottom">
+                <a class="form-link" href="/login">Đã có tài khoản? <b>Đăng nhập</b></a>
+            </div>
+        </div>
     </div>
-</body>
-</html>
+</div>
 

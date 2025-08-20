@@ -1078,8 +1078,9 @@ header.hide-header {
 }
 
 .features-table td:hover {
-  background: linear-gradient(135deg, var(--gray) 0%, var(--white) 100%);
+  background: linear-gradient(135deg, var(--gray) 10%, var(--white) 80%);
   transform: scale(1.02);
+  color: var(--orange-dark);
 }
 
 .line-left {
