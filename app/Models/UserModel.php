@@ -1,34 +1,43 @@
 <?php
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Core\Model;
 
 class UserModel extends Model
 {
-    protected $table = 'users';
+    protected string $table = 'users';
+    protected string $primaryKey = 'id';
+    protected array $fillable = [
+        'name', 'email', 'phone', 'password', 'role'
+    ];
 
-    public function create(array $data)
+    /**
+     * Tạo user mới (hash password tự động)
+     */
+    public static function createUser(array $data): static
     {
-        $sql = "INSERT INTO {$this->table} (name, email, phone, password, role) 
-                VALUES (:name, :email, :phone, :password, :role)";
-        $this->query($sql, [
-            ':name' => $data['name'],
-            ':email' => $data['email'],
-            ':phone' => $data['phone'],
-            ':password' => password_hash($data['password'], PASSWORD_BCRYPT),
-            ':role' => $data['role'] ?? 'user'
-        ]);
-        return $this->lastInsertId();
-    }
-    public function findByPhone(string $phone): ?array
-    {
-        $sql = "SELECT * FROM {$this->table} WHERE phone = :phone";
-        return $this->fetch($sql, [':phone' => $phone]);
+        $data['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
+        $data['role'] = $data['role'] ?? 'user';
+        return static::create($data);
     }
 
+    /**
+     * Tìm user theo email
+     */
     public function findByEmail(string $email): ?array
     {
-        $sql = "SELECT * FROM {$this->table} WHERE email = :email";
-        return $this->fetch($sql, [':email' => $email]);
+        $result = $this->where(['email' => $email]);
+        return $result[0]->toArray() ?? null;
+    }
+
+    /**
+     * Tìm user theo số điện thoại
+     */
+    public function findByPhone(string $phone): ?array
+    {
+        $result = $this->where(['phone' => $phone]);
+        return $result[0]->toArray() ?? null;
     }
 }

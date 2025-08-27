@@ -1,5 +1,5 @@
 <?php
-require __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
 $dotenv->load();
@@ -13,11 +13,15 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 use App\Core\Application;
+use App\Core\Middleware\CsrfMiddleware;
+use App\Core\Middleware\CorsMiddleware;
 
-$app = new Application([
-    'app' => $appConfig,
-    'db' => $dbConfig
-]);
+
+$app = new Application(array_merge($appConfig, ['database' => $dbConfig]));
+
+// Add global middlewares
+$app->addMiddleware(new CorsMiddleware());
+$app->addMiddleware(new CsrfMiddleware());
 
 require dirname(__DIR__) . '/routes/web.php';
 

@@ -4,7 +4,7 @@
     <h2 class="h2_t">CÔNG TY THU MUA PHẾ LIỆU GIÁ CAO</h2>
     <h1 id="hero-title">MINH HẢI KHƯƠNG</h1>
     <p class="highlight">Hoa hồng tích lũy lên tới <strong>1 TỶ ĐỒNG</strong></p>
-    <a href="tel:0971519789" class="cta-button" aria-label="Gọi điện ngay để được tư vấn">
+      <button class="float-btn" id="open-buy-modal" type="button">💸 Mua phế liệu</button>
       <span aria-hidden="true">📞</span> GỌI NGAY
     </a>
   </div>
@@ -188,17 +188,21 @@ Nhà máy phế liệu Minh Hải Khương nhận mua phế liệu miền Nam ra
       </div>
     </section>
 
+<?php
+  use App\Core\Session;
+  $session = new Session();
+?>
 <div class="floating-sidebar">
-    <?php if (isset($_SESSION['user_id'])): ?>
-        <a href="/post/create" class="float-btn">📝 Đăng bài</a>
-        <a href="/buy" class="float-btn">💸 Mua phế liệu</a>
-        <a href="#account" class="float-btn">👤 <?= htmlspecialchars($_SESSION['user_name']) ?></a>
-        <a href="/logout" class="float-btn">🔑 Đăng xuất</a>
-    <?php else: ?>
-        <a href="/login" class="float-btn">🔑 Đăng nhập</a>
-        <a href="/register" class="float-btn">📝 Đăng ký</a>
-        <a href="#account" class="float-btn">👤 Tài khoản</a>
-    <?php endif; ?>
+  <?php if ($session->has('user_id')): ?>
+    <a href="/post/create" class="float-btn">📝 Bán phế liệu</a>
+    <a href="/buy" class="float-btn">💸 Mua phế liệu</a>
+    <a href="#account" class="float-btn">👤 <?= htmlspecialchars($session->get('user_name')) ?></a>
+    <a href="/logout" class="float-btn">🔑 Đăng xuất</a>
+  <?php else: ?>
+    <a href="/login" class="float-btn">🔑 Đăng nhập</a>
+    <a href="/register" class="float-btn">📝 Đăng ký</a>
+    <a href="#account" class="float-btn">👤 Tài khoản</a>
+  <?php endif; ?>
 </div>
 
 

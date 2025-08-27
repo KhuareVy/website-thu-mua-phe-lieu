@@ -1,21 +1,22 @@
+
 <?php
+
 use App\Controllers\AuthController;
 use App\Controllers\HomeController;
 use App\Controllers\AdminController;
+use App\Core\Middleware\AuthMiddleware;
 
+$router = $app->getRouter();
 
-$app->router->get('/', [HomeController::class, 'index']);
+// Public routes
+$router->get('/', [HomeController::class, 'home']);
+$router->get('/register', [AuthController::class, 'showRegister']);
+$router->post('/register', [AuthController::class, 'register']);
+$router->get('/login', [AuthController::class, 'showLogin']);
+$router->post('/login', [AuthController::class, 'login']);
 
-$app->router->get('/register', [AuthController::class, 'showRegister']);
-$app->router->post('/register', [AuthController::class, 'register']);
-
-$app->router->get('/login', [AuthController::class, 'showLogin']);
-$app->router->post('/login', [AuthController::class, 'login']);
-
-$app->router->get('/login', [AuthController::class, 'showLogin']);
-$app->router->post('/login', [AuthController::class, 'login']);
-
-$app->router->get('/dashboard', [AdminController::class, 'showAdmin']);
-
-
-$app->router->get('/logout', [AuthController::class, 'logout']);
+// Protected routes (require authentication)
+$router->group('', function($router) {
+	$router->get('/dashboard', [AdminController::class, 'showAdmin']);
+	$router->get('/logout', [AuthController::class, 'logout']);
+}, [AuthMiddleware::class]);

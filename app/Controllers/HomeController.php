@@ -6,9 +6,9 @@ use App\Core\Request;
 
 class HomeController extends Controller
 {
-    public function index(Request $request)
+    public function home(Request $request)
     {
         $data = ['title' => 'Trang chủ'];
-        $this->view('home/index', $data);
+        return $this->render('home', $data);
     }
 }

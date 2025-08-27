@@ -1,163 +1,84 @@
 <?php
+declare(strict_types=1);
+
 namespace App\Core;
 
+/**
+ * HTTP Request handler (PSR-7 compatible)
+ */
 class Request
 {
-    private array $body = [];
-    private array $files = [];
-    private array $headers = [];
-    private array $routeParams = [];
+    private string $method;
+    private string $uri;
+    private array $headers;
+    private array $queryParams;
+    private array $bodyParams;
+    private array $files;
+    private array $cookies;
+    private array $serverParams;
 
     public function __construct()
     {
-        $this->body = $this->parseBody();
+        $this->method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+        $this->uri = $this->getRequestUri();
+        $this->headers = $this->getAllHeaders();
+        $this->queryParams = $_GET;
+    $this->bodyParams = $this->parseBodyParams();
         $this->files = $_FILES;
-        $this->headers = $this->parseHeaders();
+        $this->cookies = $_COOKIE;
+        $this->serverParams = $_SERVER;
     }
 
-    public function getMethod(): string
+    private function getRequestUri(): string
     {
-        return strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
-    }
-
-    public function getPath(): string
-    {
-        $uri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
-        $scriptName = dirname($_SERVER['SCRIPT_NAME'] ?? '');
-        
-        if ($scriptName !== '/' && strpos($uri, $scriptName) === 0) {
-            $uri = substr($uri, strlen($scriptName));
+        $uri = $_SERVER['REQUEST_URI'] ?? '/';
+        if (($pos = strpos($uri, '?')) !== false) {
+            $uri = substr($uri, 0, $pos);
         }
-        
-        $path = rtrim($uri, '/');
-        return $path === '' ? '/' : $path;
+        return $uri;
     }
 
-    public function getUri(): string
+    private function getAllHeaders(): array
     {
-        return $_SERVER['REQUEST_URI'] ?? '/';
-    }
-
-    public function getUrl(): string
-    {
-        $scheme = $this->isSecure() ? 'https' : 'http';
-        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-        return "$scheme://$host" . $this->getUri();
-    }
-
-    public function isSecure(): bool
-    {
-        return isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
-    }
-
-    public function getBody(): array
-    {
-        return $this->body;
-    }
-
-    private function parseBody(): array
-    {
-        $body = [];
-        $method = $this->getMethod();
-        
-        if ($method === 'GET') {
-            $body = $_GET;
-        } elseif ($method === 'POST') {
-            $body = $_POST;
-        } else {
-            // Handle PUT, PATCH, DELETE
-            $input = file_get_contents('php://input');
-            $contentType = $this->getHeader('Content-Type', '');
-            
-            if (strpos($contentType, 'application/json') !== false) {
-                $body = json_decode($input, true) ?? [];
-            } else {
-                parse_str($input, $body);
-            }
+        if (function_exists('getallheaders')) {
+            return getallheaders();
         }
-        
-        // Sanitize input
-        return $this->sanitizeInput($body);
-    }
-
-    private function sanitizeInput(array $data): array
-    {
-        $sanitized = [];
-        foreach ($data as $key => $value) {
-            if (is_array($value)) {
-                $sanitized[$key] = $this->sanitizeInput($value);
-            } else {
-                $sanitized[$key] = htmlspecialchars(strip_tags($value), ENT_QUOTES, 'UTF-8');
-            }
-        }
-        return $sanitized;
-    }
-
-    private function parseHeaders(): array
-    {
         $headers = [];
         foreach ($_SERVER as $key => $value) {
             if (strpos($key, 'HTTP_') === 0) {
-                $header = str_replace('_', '-', substr($key, 5));
-                $headers[ucwords(strtolower($header), '-')] = $value;
+                $headerName = str_replace('_', '-', substr($key, 5));
+                $headers[$headerName] = $value;
             }
         }
         return $headers;
     }
 
-    public function get(?string $key = null, $default = null)
+    private function parseBodyParams(): array
     {
-        if ($key === null) {
-            return $this->body;
+        if ($this->method === 'GET') {
+            return [];
         }
-        return $this->body[$key] ?? $default;
-    }
-
-    public function post(?string $key = null, $default = null)
-    {
-        if ($this->getMethod() !== 'POST') {
-            return $default;
+        $contentType = $this->getHeader('Content-Type');
+        if (strpos($contentType, 'application/json') !== false) {
+            $json = file_get_contents('php://input');
+            return json_decode($json, true) ?? [];
         }
-        
-        if ($key === null) {
-            return $this->body;
-        }
-        return $this->body[$key] ?? $default;
+        return $_POST;
     }
 
-    public function has(string $key): bool
+    public function getMethod(): string
     {
-        return isset($this->body[$key]);
+        return $this->method;
     }
 
-    public function filled(string $key): bool
+    public function getUri(): string
     {
-        return isset($this->body[$key]) && !empty($this->body[$key]);
+        return $this->uri;
     }
 
-    public function only(array $keys): array
+    public function getHeader(string $name): string
     {
-        return array_intersect_key($this->body, array_flip($keys));
-    }
-
-    public function except(array $keys): array
-    {
-        return array_diff_key($this->body, array_flip($keys));
-    }
-
-    public function file(string $key): ?array
-    {
-        return $this->files[$key] ?? null;
-    }
-
-    public function hasFile(string $key): bool
-    {
-        return isset($this->files[$key]) && $this->files[$key]['error'] === UPLOAD_ERR_OK;
-    }
-
-    public function getHeader(string $name, $default = null): mixed
-    {
-        return $this->headers[$name] ?? $default;
+        return $this->headers[$name] ?? '';
     }
 
     public function getHeaders(): array
@@ -165,52 +86,69 @@ class Request
         return $this->headers;
     }
 
+    public function getQueryParam(string $name, $default = null)
+    {
+        return $this->queryParams[$name] ?? $default;
+    }
+
+    public function getQueryParams(): array
+    {
+        return $this->queryParams;
+    }
+
+    public function getBodyParam(string $name, $default = null)
+    {
+        return $this->bodyParams[$name] ?? $default;
+    }
+
+    public function getBodyParams(): array
+    {
+        return $this->bodyParams;
+    }
+
+    public function getFile(string $name): ?array
+    {
+        return $this->files[$name] ?? null;
+    }
+
+    public function getFiles(): array
+    {
+        return $this->files;
+    }
+
+    public function getCookie(string $name, $default = null)
+    {
+        return $this->cookies[$name] ?? $default;
+    }
+
+    public function getCookies(): array
+    {
+        return $this->cookies;
+    }
+
+    public function getServerParam(string $name, $default = null)
+    {
+        return $this->serverParams[$name] ?? $default;
+    }
+
+    public function isPost(): bool
+    {
+        return $this->method === 'POST';
+    }
+
+    public function isGet(): bool
+    {
+        return $this->method === 'GET';
+    }
+
     public function isAjax(): bool
     {
-        return $this->getHeader('X-Requested-With') === 'XMLHttpRequest';
+        return strtolower($this->getHeader('X-Requested-With')) === 'xmlhttprequest';
     }
 
-    public function isJson(): bool
+    public function isSecure(): bool
     {
-        return strpos($this->getHeader('Content-Type', ''), 'application/json') !== false;
+        return (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+            || $_SERVER['SERVER_PORT'] == 443;
     }
-
-    public function expectsJson(): bool
-    {
-        return $this->isAjax() || $this->isJson() || 
-               strpos($this->getHeader('Accept', ''), 'application/json') !== false;
-    }
-
-    public function ip(): string
-    {
-        return $_SERVER['HTTP_X_FORWARDED_FOR'] ?? 
-               $_SERVER['HTTP_CLIENT_IP'] ?? 
-               $_SERVER['REMOTE_ADDR'] ?? 
-               '0.0.0.0';
-    }
-
-    public function userAgent(): string
-    {
-        return $_SERVER['HTTP_USER_AGENT'] ?? '';
-    }
-
-    public function setRouteParams(array $params): void
-    {
-        $this->routeParams = $params;
-    }
-
-    public function route(?string $key = null, $default = null)
-    {
-        if ($key === null) {
-            return $this->routeParams;
-        }
-        return $this->routeParams[$key] ?? $default;
-    }
-
-    // Method checks
-    public function isPost(): bool { return $this->getMethod() === 'POST'; }
-    public function isGet(): bool { return $this->getMethod() === 'GET'; }
-    public function isPut(): bool { return $this->getMethod() === 'PUT'; }
-    public function isPatch(): bool { return $this->getMethod() === 'PATCH'; }
-    public function isDelete(): bool { return $this->getMethod() === 'DELETE'; }
 }

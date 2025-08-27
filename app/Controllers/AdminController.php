@@ -7,6 +7,6 @@ class AdminController extends Controller
 {
     public function showAdmin()
     {
-        return $this->view('admin/dashboard');
+        return $this->render('admin/dashboard');
     }
 }

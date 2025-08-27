@@ -1,68 +1,77 @@
 <?php
+declare(strict_types=1);
+
 namespace App\Controllers;
 
 use App\Core\Controller;
 use App\Core\Request;
-use App\Core\Response;
 use App\Models\UserModel;
 
 class AuthController extends Controller
 {
-    public function showRegister()
+    public function showRegister(): \App\Core\Response
     {
-        return $this->view('auth/register');
+        return $this->render('auth/register');
     }
 
-    public function register(Request $request)
+    public function register(): \App\Core\Response
     {
-        $data = $request->getBody();
-
-        if (empty($data['name']) || empty($data['email']) || empty($data['phone']) || empty($data['password'])) {
-            return $this->view('auth/register', ['error' => 'Vui lòng điền đầy đủ thông tin']);
+        try {
+            $data = $this->validate([
+                'name' => 'required',
+                'email' => 'required|email',
+                'phone' => 'required',
+                'password' => 'required|min:6',
+            ]);
+        } catch (\InvalidArgumentException $e) {
+            return $this->render('auth/register', ['error' => json_decode($e->getMessage(), true)]);
         }
 
         if (!preg_match('/^[0-9]{10,15}$/', $data['phone'])) {
-            return $this->view('auth/register', ['error' => 'Số điện thoại không hợp lệ']);
+            return $this->render('auth/register', ['error' => 'Số điện thoại không hợp lệ']);
         }
 
         $userModel = new UserModel();
         if ($userModel->findByEmail($data['email'])) {
-            return $this->view('auth/register', ['error' => 'Email đã tồn tại']);
+            return $this->render('auth/register', ['error' => 'Email đã tồn tại']);
         }
         if ($userModel->findByPhone($data['phone'])) {
-            return $this->view('auth/register', ['error' => 'Số điện thoại đã tồn tại']);
+            return $this->render('auth/register', ['error' => 'Số điện thoại đã tồn tại']);
         }
 
         $userModel->create($data);
-
-        (new Response())->redirect('/login');
+        return $this->redirect('/login');
     }
 
-    public function showLogin()
+    public function showLogin(): \App\Core\Response
     {
-        return $this->view('auth/login');
+        return $this->render('auth/login');
     }
 
-    public function login(Request $request)
+    public function login(): \App\Core\Response
     {
-        $data = $request->getBody();
+        $email = $this->input('email');
+        $password = $this->input('password');
         $userModel = new UserModel();
-        $user = $userModel->findByEmail($data['email']);
+        $user = $userModel->findByEmail($email);
 
-        if (!$user || !password_verify($data['password'], $user['password'])) {
-            return $this->view('auth/login', ['error' => 'Email hoặc mật khẩu không đúng']);
+        if (!$user || !password_verify($password, $user['password'])) {
+            return $this->render('auth/login', ['error' => 'Email hoặc mật khẩu không đúng']);
         }
-        $_SESSION['user_id'] = $user['id'];
-        $_SESSION['user_name'] = $user['name'];
-        $_SESSION['user_role'] = $user['role'];
 
-        (new Response())->redirect('/');
+        $this->session->set('user_id', $user['id']);
+        $this->session->set('user_name', $user['name']);
+        $this->session->set('user_role', $user['role']);
+
+        return $this->redirect('/');
     }
 
-    public function logout()
+    public function logout(): \App\Core\Response
     {
-        unset($_SESSION['user']);
-        session_destroy();
-        (new Response())->redirect('/');
+        $this->session->remove('user_id');
+        $this->session->remove('user_name');
+        $this->session->remove('user_role');
+        $this->session->destroy();
+        return $this->redirect('/');
     }
 }
