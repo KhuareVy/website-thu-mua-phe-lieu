@@ -1,5 +1,5 @@
 <?php include __DIR__ . '/header.php'; ?>
 <main role="main">
-    <?php include $contentView; ?>
+    <?= $content ?? '' ?>
 </main>
 <?php include __DIR__ . '/footer.php'; ?>

@@ -4,10 +4,23 @@
     <div class="auth-content">
         <div class="form-container">
             <h1 class="form-title">Đăng nhập</h1>
-            <?php if(!empty($error)): ?>
-                <div class="error-message"><?= htmlspecialchars($error) ?></div>
+            <?php if(!empty($error)):
+                $err = $error;
+                if (is_array($err)) {
+                    if (empty($err)) {
+                        $err = 'Có lỗi dữ liệu.';
+                    } else {
+                        $err = implode("<br>", array_map('htmlspecialchars', array_values($err)));
+                    }
+                } else {
+                    $err = htmlspecialchars($err);
+                }
+            ?>
+                <div class="error-message"><?= $err ?></div>
             <?php endif; ?>
             <form method="POST" action="/login" autocomplete="on">
+                <!-- CSRF Token -->
+                <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars($csrf_token ?? ($_SESSION['csrf_token'] ?? '')) ?>">
                 <div class="input-group">
                     <label for="email"><i class="fa fa-envelope"></i> Email</label>
                     <input type="email" id="email" name="email" placeholder="Nhập email" required autofocus>

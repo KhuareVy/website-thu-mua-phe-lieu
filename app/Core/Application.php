@@ -159,7 +159,7 @@ class Application implements RequestHandlerInterface
 
             // Add namespace if not present
             if (strpos($controllerClass, '\\') === false) {
-                $controllerClass = 'App\\Controller\\' . $controllerClass;
+                $controllerClass = 'App\\Controllers\\' . $controllerClass; // Sửa lại Controllers (có "s")
             }
 
             if (!class_exists($controllerClass)) {
@@ -172,7 +172,8 @@ class Application implements RequestHandlerInterface
                 throw new \Exception("Method not found: {$controllerClass}::{$method}", 404);
             }
 
-            return $controller->$method(...$params);
+            // SỬA DÒNG NÀY: truyền $request vào đầu tiên
+            return $controller->$method($request, ...$params);
         }
 
         if (is_callable($handler)) {

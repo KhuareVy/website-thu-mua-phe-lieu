@@ -5,17 +5,30 @@ namespace App\Controllers;
 
 use App\Core\Controller;
 use App\Core\Request;
+use App\Core\Response;
 use App\Models\UserModel;
 
 class AuthController extends Controller
 {
-    public function showRegister(): \App\Core\Response
+    private function setLayout(): void
     {
-        return $this->render('auth/register');
+        $this->view->setLayout('layouts/main');
     }
 
-    public function register(): \App\Core\Response
+    public function showRegister(): Response
     {
+        if ($this->session->get('user_id')) {
+            return $this->redirect('/');
+        }
+        $this->setLayout();
+        $csrf_token = $this->session->getCsrfToken();
+        return $this->render('auth/register', ['csrf_token' => $csrf_token]);
+    }
+
+    public function register(): Response
+    {
+        $this->setLayout();
+        $csrf_token = $this->session->getCsrfToken();
         try {
             $data = $this->validate([
                 'name' => 'required',
@@ -24,39 +37,55 @@ class AuthController extends Controller
                 'password' => 'required|min:6',
             ]);
         } catch (\InvalidArgumentException $e) {
-            return $this->render('auth/register', ['error' => json_decode($e->getMessage(), true)]);
+            $err = json_decode($e->getMessage(), true);
+            if (is_array($err)) {
+                $err = empty($err) ? 'Có lỗi dữ liệu.' : implode('<br>', array_map('htmlspecialchars', array_values($err)));
+            } else {
+                $err = htmlspecialchars((string)$err);
+            }
+            return $this->render('auth/register', ['error' => $err, 'csrf_token' => $csrf_token]);
         }
 
         if (!preg_match('/^[0-9]{10,15}$/', $data['phone'])) {
-            return $this->render('auth/register', ['error' => 'Số điện thoại không hợp lệ']);
+            return $this->render('auth/register', ['error' => 'Số điện thoại không hợp lệ', 'csrf_token' => $csrf_token]);
         }
 
         $userModel = new UserModel();
         if ($userModel->findByEmail($data['email'])) {
-            return $this->render('auth/register', ['error' => 'Email đã tồn tại']);
+            return $this->render('auth/register', ['error' => 'Email đã tồn tại', 'csrf_token' => $csrf_token]);
         }
         if ($userModel->findByPhone($data['phone'])) {
-            return $this->render('auth/register', ['error' => 'Số điện thoại đã tồn tại']);
+            return $this->render('auth/register', ['error' => 'Số điện thoại đã tồn tại', 'csrf_token' => $csrf_token]);
         }
 
-        $userModel->create($data);
+        // Tạo user mới, tự động hash password
+        UserModel::createUser($data);
         return $this->redirect('/login');
     }
 
-    public function showLogin(): \App\Core\Response
+    public function showLogin(): Response
     {
-        return $this->render('auth/login');
+        if ($this->session->get('user_id')) {
+            return $this->redirect('/');
+        }
+        $this->setLayout();
+        $csrf_token = $this->session->getCsrfToken();
+        return $this->render('auth/login', ['csrf_token' => $csrf_token]);
     }
 
-    public function login(): \App\Core\Response
+    public function login(): Response
     {
+        $this->setLayout();
+        $csrf_token = $this->session->getCsrfToken();
         $email = $this->input('email');
         $password = $this->input('password');
         $userModel = new UserModel();
         $user = $userModel->findByEmail($email);
 
         if (!$user || !password_verify($password, $user['password'])) {
-            return $this->render('auth/login', ['error' => 'Email hoặc mật khẩu không đúng']);
+            $err = 'Email hoặc mật khẩu không đúng';
+            $err = htmlspecialchars($err);
+            return $this->render('auth/login', ['error' => $err, 'csrf_token' => $csrf_token]);
         }
 
         $this->session->set('user_id', $user['id']);
@@ -66,8 +95,9 @@ class AuthController extends Controller
         return $this->redirect('/');
     }
 
-    public function logout(): \App\Core\Response
+    public function logout(): Response
     {
+        $this->setLayout();
         $this->session->remove('user_id');
         $this->session->remove('user_name');
         $this->session->remove('user_role');

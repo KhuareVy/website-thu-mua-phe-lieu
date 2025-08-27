@@ -19,7 +19,12 @@ class UserModel extends Model
     public static function createUser(array $data): static
     {
         $data['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
-        $data['role'] = $data['role'] ?? 'user';
+        $data['role'] = $data['role'] ?? 'customer';
+        // Đổi key phone -> phone nếu có
+        if (isset($data['phone'])) {
+            $data['phone'] = $data['phone'];
+            unset($data['phone']);
+        }
         return static::create($data);
     }
 
@@ -29,7 +34,10 @@ class UserModel extends Model
     public function findByEmail(string $email): ?array
     {
         $result = $this->where(['email' => $email]);
-        return $result[0]->toArray() ?? null;
+        if (empty($result) || !isset($result[0])) {
+            return null;
+        }
+        return $result[0]->toArray();
     }
 
     /**
@@ -38,6 +46,9 @@ class UserModel extends Model
     public function findByPhone(string $phone): ?array
     {
         $result = $this->where(['phone' => $phone]);
-        return $result[0]->toArray() ?? null;
+        if (empty($result) || !isset($result[0])) {
+            return null;
+        }
+        return $result[0]->toArray();
     }
 }

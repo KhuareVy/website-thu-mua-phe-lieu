@@ -3,12 +3,16 @@ namespace App\Controllers;
 
 use App\Core\Controller;
 use App\Core\Request;
+use App\Core\Response;
 
 class HomeController extends Controller
 {
-    public function home(Request $request)
+    public function home(Request $request): Response
     {
-        $data = ['title' => 'Trang chủ'];
+        $this->view->setLayout('layouts/main');
+        $data = [
+            'title' => 'Trang chủ',
+        ];
         return $this->render('home', $data);
     }
 }

@@ -35,6 +35,7 @@
   }
   </script>
   <!-- Preload critical resources -->
+  <link rel="shortcut icon" href="../../assets/images/mhk-logo-fit.png" type="image/png">
   <link rel="preload" href="../../assets/css/home.css" as="style">
   <link rel="preload" href="../../assets/images/mhk-logo-fit.png" as="image">
   <!-- CSS -->
@@ -48,7 +49,9 @@
   <header role="banner">
     <div class="top-header">
       <div class="logo">
-        <img src="../../assets/images/mhk-logo-fit.png" alt="Logo Công ty Thu mua Phế liệu Minh Hải Khương" width="200" height="100" loading="eager">
+        <a href="/">
+           <img src="../../assets/images/mhk-logo-fit.png" alt="Logo Công ty Thu mua Phế liệu Minh Hải Khương" width="200" height="100" loading="eager">
+        </a>
       </div>
       <nav class="main-nav" role="navigation" aria-label="Menu chính">
         <a href="#bang-gia" aria-label="Xem bảng giá phế liệu hôm nay">BẢNG GIÁ PHẾ LIỆU HÔM NAY</a>

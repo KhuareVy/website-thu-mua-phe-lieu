@@ -190,7 +190,7 @@ Nhà máy phế liệu Minh Hải Khương nhận mua phế liệu miền Nam ra
 
 <?php
   use App\Core\Session;
-  $session = new Session();
+  $session = Session::getInstance();
 ?>
 <div class="floating-sidebar">
   <?php if ($session->has('user_id')): ?>

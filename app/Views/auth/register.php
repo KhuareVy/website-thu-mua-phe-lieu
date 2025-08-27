@@ -4,8 +4,22 @@
     <div class="auth-content">
         <div class="form-container">
             <h1 class="form-title">Đăng ký</h1>
-            <?php if(!empty($error)) echo "<div class='error-message'>" . htmlspecialchars($error) . "</div>"; ?>
+            <?php if(!empty($error)) {
+                $err = $error;
+                if (is_array($err)) {
+                    if (empty($err)) {
+                        $err = 'Có lỗi dữ liệu.';
+                    } else {
+                        $err = implode("<br>", array_map('htmlspecialchars', array_values($err)));
+                    }
+                } else {
+                    $err = htmlspecialchars($err);
+                }
+                echo "<div class='error-message'>" . $err . "</div>";
+            } ?>
             <form method="POST" action="/register" autocomplete="on">
+                <!-- CSRF Token -->
+                <input type="hidden" name="_csrf_token" value="<?php echo htmlspecialchars($csrf_token ?? ($_SESSION['csrf_token'] ?? '')); ?>">
                 <div class="input-group">
                     <label for="name"><i class="fa fa-user"></i> Họ và tên</label>
                     <input type="text" id="name" name="name" placeholder="Nhập họ và tên" required>
