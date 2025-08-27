@@ -20,10 +20,10 @@ class UserModel extends Model
     {
         $data['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
         $data['role'] = $data['role'] ?? 'customer';
-        // Đổi key phone -> phone nếu có
-        if (isset($data['phone'])) {
-            $data['phone'] = $data['phone'];
-            unset($data['phone']);
+        // Đổi key phone_number -> phone nếu có
+        if (isset($data['phone_number'])) {
+            $data['phone'] = $data['phone_number'];
+            unset($data['phone_number']);
         }
         return static::create($data);
     }
