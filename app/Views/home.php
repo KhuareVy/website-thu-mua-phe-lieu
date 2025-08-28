@@ -193,17 +193,18 @@ Nhà máy phế liệu Minh Hải Khương nhận mua phế liệu miền Nam ra
   $session = Session::getInstance();
   $userData = $session->get('user_data');
   $userName = $userData['full_name'] ?? 'Tài khoản';
+  $userRole = $userData['role'] ?? null;
+  $profileLink = ($userRole === 'admin') ? '/dashboard' : '/404';
 ?>
 <div class="floating-sidebar">
   <?php if ($session->has('user_id')): ?>
     <a href="/post/create" class="float-btn">📝 Bán phế liệu</a>
     <a href="/buy" class="float-btn">💸 Mua phế liệu</a>
-    <a href="#account" class="float-btn">👤 <?= htmlspecialchars((string) $userName) ?></a>
+    <a href="<?= htmlspecialchars($profileLink) ?>" class="float-btn">👤 <?= htmlspecialchars((string) $userName) ?></a>
     <a href="/logout" class="float-btn">🔑 Đăng xuất</a>
   <?php else: ?>
     <a href="/login" class="float-btn">🔑 Đăng nhập</a>
     <a href="/register" class="float-btn">📝 Đăng ký</a>
-    <a href="#account" class="float-btn">👤 Tài khoản</a>
   <?php endif; ?>
 </div>
 

@@ -18,6 +18,10 @@ class AuthController extends Controller
     public function showRegister(): Response
     {
         if ($this->session->get('user_id')) {
+            $user = $this->session->get('user_data');
+            if (isset($user['role']) && $user['role'] === 'admin') {
+                return $this->redirect('/dashboard');
+            }
             return $this->redirect('/');
         }
         $this->setLayout();
@@ -66,8 +70,14 @@ class AuthController extends Controller
     public function showLogin(): Response
     {
         if ($this->session->get('user_id')) {
+            $user = $this->session->get('user_data');
+            if (isset($user['role']) && $user['role'] === 'admin') {
+                return $this->redirect('/dashboard');
+            }
             return $this->redirect('/');
         }
+        header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+        header('Pragma: no-cache');
         $this->setLayout();
         $csrf_token = $this->session->getCsrfToken();
         return $this->render('auth/login', ['csrf_token' => $csrf_token]);
