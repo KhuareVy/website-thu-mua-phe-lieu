@@ -12,7 +12,7 @@ class AuthController extends Controller
 {
     private function setLayout(): void
     {
-        $this->view->setLayout('layouts/main');
+        $this->view->setLayout('layouts/default/main');
     }
 
     public function showRegister(): Response
@@ -88,10 +88,11 @@ class AuthController extends Controller
             return $this->render('auth/login', ['error' => $err, 'csrf_token' => $csrf_token]);
         }
 
-        $this->session->set('user_id', $user['id']);
-        $this->session->set('user_name', $user['full_name']);
-        $this->session->set('user_role', $user['role']);
+    $this->session->login($user);
 
+        if ($user['role'] === 'admin') {
+            return $this->redirect('/dashboard');
+        }
         return $this->redirect('/');
     }
 

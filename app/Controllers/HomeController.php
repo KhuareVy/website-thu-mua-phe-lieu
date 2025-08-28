@@ -9,7 +9,7 @@ class HomeController extends Controller
 {
     public function home(Request $request): Response
     {
-        $this->view->setLayout('layouts/main');
+        $this->view->setLayout('layouts/default/main');
         $data = [
             'title' => 'Trang chủ',
         ];

@@ -78,7 +78,13 @@ class Request
 
     public function getHeader(string $name): string
     {
-        return $this->headers[$name] ?? '';
+        $nameLower = strtolower($name);
+        foreach ($this->headers as $key => $value) {
+            if (strtolower($key) === $nameLower) {
+                return $value;
+            }
+        }
+        return '';
     }
 
     public function getHeaders(): array

@@ -18,7 +18,9 @@ class Application implements RequestHandlerInterface
     private View $view;
     private Session $session;
     private Database $database;
+    /** @var array<string,mixed> */
     private array $config;
+    /** @var array<MiddlewareInterface|class-string<MiddlewareInterface>> */
     private array $middlewares = [];
 
     public function __construct(array $config = [])
@@ -34,11 +36,11 @@ class Application implements RequestHandlerInterface
     {
         // Initialize core services
         $this->database = Database::getInstance($this->config['database'] ?? []);
-        $this->session = Session::getInstance();
-        $this->request = new Request();
+        $this->session  = Session::getInstance();
+        $this->request  = new Request();
         $this->response = new Response();
-        $this->view = new View($this->config['views_path'] ?? '');
-        $this->router = new Router();
+        $this->view     = new View($this->config['views_path'] ?? '');
+        $this->router   = new Router();
 
         // Set error handling
         set_error_handler([$this, 'handleError']);
@@ -50,23 +52,19 @@ class Application implements RequestHandlerInterface
 
     /**
      * Add global middleware
+     *
+     * @param MiddlewareInterface|class-string<MiddlewareInterface> $middleware
      */
-    public function addMiddleware(MiddlewareInterface $middleware): void
+    public function addMiddleware(MiddlewareInterface|string $middleware): void
     {
         $this->middlewares[] = $middleware;
     }
 
-    /**
-     * Get router instance
-     */
     public function getRouter(): Router
     {
         return $this->router;
     }
 
-    /**
-     * Get database instance
-     */
     public function getDatabase(): Database
     {
         return $this->database;
@@ -78,7 +76,13 @@ class Application implements RequestHandlerInterface
     public function run(): void
     {
         try {
-            $response = $this->processMiddlewares($this->request);
+            // Build global middleware pipeline; final is $this->handle()
+            $response = $this->dispatchPipeline(
+                $this->request,
+                $this->normalizeMiddlewares($this->middlewares),
+                // Final handler for global pipeline is "the application" itself
+                fn(Request $req): Response => $this->handle($req)
+            );
             $response->send();
         } catch (\Throwable $e) {
             $this->handleException($e);
@@ -86,72 +90,110 @@ class Application implements RequestHandlerInterface
     }
 
     /**
-     * Process middlewares chain
-     */
-    private function processMiddlewares(Request $request): Response
-    {
-        $middlewares = $this->middlewares;
-        
-        $handler = function($request) use (&$middlewares, &$handler) {
-            if (empty($middlewares)) {
-                return $this->handle($request);
-            }
-            
-            $middleware = array_shift($middlewares);
-            return $middleware->process($request, new class($handler) implements RequestHandlerInterface {
-                private $next;
-                
-                public function __construct(callable $next) {
-                    $this->next = $next;
-                }
-                
-                public function handle(Request $request): Response {
-                    return ($this->next)($request);
-                }
-            });
-        };
-
-        return $handler($request);
-    }
-
-    /**
-     * Handle request (PSR-15)
+     * PSR-15 handle(): resolve route, then run route-level middleware pipeline,
+     * whose final handler invokes the controller.
      */
     public function handle(Request $request): Response
     {
         try {
             $route = $this->router->resolve($request);
-            
-            // Process route middlewares
-            if (!empty($route['middlewares'])) {
-                foreach ($route['middlewares'] as $middlewareClass) {
-                    $middleware = new $middlewareClass();
-                    $response = $middleware->process($request, $this);
-                    
-                    if ($response->getStatusCode() !== 200) {
-                        return $response;
-                    }
-                }
-            }
 
-            return $this->callController($route, $request);
+            /** @var array<int, MiddlewareInterface|class-string<MiddlewareInterface>> $routeMiddlewares */
+            $routeMiddlewares = $route['middlewares'] ?? [];
+
+            // Build route pipeline; final handler calls controller
+            return $this->dispatchPipeline(
+                $request,
+                $this->normalizeMiddlewares($routeMiddlewares),
+                fn(Request $req): Response => $this->callController($route, $req)
+            );
         } catch (\Throwable $e) {
             return $this->handleRouteException($e);
         }
     }
 
     /**
+     * Build & run a middleware pipeline:
+     * [mw1 -> mw2 -> ... -> finalHandler]
+     *
+     * @param array<int, MiddlewareInterface> $middlewares
+     * @param callable(Request):Response $finalHandler
+     */
+    private function dispatchPipeline(
+        Request $request,
+        array $middlewares,
+        callable $finalHandler
+    ): Response {
+        // Wrap final handler to match RequestHandlerInterface
+        $handler = new class($finalHandler) implements RequestHandlerInterface {
+            /** @var callable(Request):Response */
+            private $final;
+            public function __construct(callable $final) { $this->final = $final; }
+            public function handle(Request $request): Response
+            {
+                return ($this->final)($request);
+            }
+        };
+
+        // Fold middlewares from last to first
+        for ($i = count($middlewares) - 1; $i >= 0; $i--) {
+            $current = $middlewares[$i];
+            $next = $handler;
+
+            $handler = new class($current, $next) implements RequestHandlerInterface {
+                private MiddlewareInterface $mw;
+                private RequestHandlerInterface $next;
+                public function __construct(MiddlewareInterface $mw, RequestHandlerInterface $next)
+                {
+                    $this->mw = $mw;
+                    $this->next = $next;
+                }
+                public function handle(Request $request): Response
+                {
+                    // Delegate to middleware->process($request, $next)
+                    return $this->mw->process($request, $this->next);
+                }
+            };
+        }
+
+        // Kick off the chain
+        return $handler->handle($request);
+    }
+
+    /**
+     * Ensure all middleware entries are instances (instantiate class-strings).
+     *
+     * @param array<int, MiddlewareInterface|class-string<MiddlewareInterface>> $list
+     * @return array<int, MiddlewareInterface>
+     */
+    private function normalizeMiddlewares(array $list): array
+    {
+        $out = [];
+        foreach ($list as $mw) {
+            if (is_string($mw)) {
+                // Instantiate lazily declared middleware classes
+                /** @var class-string<MiddlewareInterface> $mw */
+                $out[] = new $mw();
+            } else {
+                $out[] = $mw;
+            }
+        }
+        return $out;
+    }
+
+    /**
      * Call controller method
+     * Supports "Controller@method" or "Controller" (default method "index")
      */
     private function callController(array $route, Request $request): Response
     {
         $handler = $route['handler'];
-        $params = $route['params'] ?? [];
+        $params  = $route['params'] ?? [];
 
         if (is_string($handler)) {
-            // Handle "Controller@method" format
+            // "Controller@method"
             if (strpos($handler, '@') !== false) {
-                [$controllerClass, $method] = explode('@', $handler);
+                [$controllerClass, $method] = explode('@', $handler, 2);
             } else {
                 $controllerClass = $handler;
                 $method = 'index';
@@ -159,7 +201,7 @@ class Application implements RequestHandlerInterface
 
             // Add namespace if not present
             if (strpos($controllerClass, '\\') === false) {
-                $controllerClass = 'App\\Controllers\\' . $controllerClass; // Sửa lại Controllers (có "s")
+                $controllerClass = 'App\\Controllers\\' . $controllerClass;
             }
 
             if (!class_exists($controllerClass)) {
@@ -172,12 +214,12 @@ class Application implements RequestHandlerInterface
                 throw new \Exception("Method not found: {$controllerClass}::{$method}", 404);
             }
 
-            // SỬA DÒNG NÀY: truyền $request vào đầu tiên
+            // Call with $request first for consistency
             return $controller->$method($request, ...$params);
         }
 
         if (is_callable($handler)) {
-            // Handle closure routes
+            // Closure route: (Request $req, Response $res, ...$params)
             return $handler($request, $this->response, ...$params);
         }
 
@@ -189,12 +231,12 @@ class Application implements RequestHandlerInterface
      */
     private function handleRouteException(\Throwable $e): Response
     {
-    $statusCode = (int)($e->getCode() ?: 500);
-        
+        $statusCode = (int)($e->getCode() ?: 500);
+
         if ($this->request->isAjax()) {
             return $this->response->json([
                 'error' => $e->getMessage(),
-                'code' => $statusCode
+                'code'  => $statusCode
             ], $statusCode);
         }
 
@@ -202,21 +244,19 @@ class Application implements RequestHandlerInterface
         try {
             $html = $this->view->render("errors/{$statusCode}", [
                 'message' => $e->getMessage(),
-                'code' => $statusCode
+                'code'    => $statusCode
             ]);
             return $this->response->html($html, $statusCode);
         } catch (\Exception $viewException) {
-            // Fallback to basic error page
-            $html = "
-            <!DOCTYPE html>
-            <html>
-            <head><title>Error {$statusCode}</title></head>
-            <body>
-                <h1>Error {$statusCode}</h1>
-                <p>{$e->getMessage()}</p>
-            </body>
-            </html>";
-            
+            // Fallback HTML
+            $html = "<!DOCTYPE html>
+<html>
+<head><title>Error {$statusCode}</title></head>
+<body>
+    <h1>Error {$statusCode}</h1>
+    <p>{$e->getMessage()}</p>
+</body>
+</html>";
             return $this->response->html($html, $statusCode);
         }
     }
@@ -229,7 +269,6 @@ class Application implements RequestHandlerInterface
         if (!(error_reporting() & $severity)) {
             return;
         }
-
         throw new \ErrorException($message, 0, $severity, $file, $line);
     }
 
@@ -240,7 +279,7 @@ class Application implements RequestHandlerInterface
     {
         $response = $this->handleRouteException($e);
         $response->send();
-        
+
         // Log error in production
         if (($this->config['environment'] ?? null) === 'production') {
             error_log(sprintf(

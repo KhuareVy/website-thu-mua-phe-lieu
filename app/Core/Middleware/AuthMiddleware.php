@@ -13,6 +13,14 @@ class AuthMiddleware implements MiddlewareInterface
 {
     public function process(Request $request, RequestHandlerInterface $handler): Response
     {
+        $path = $request->getUri();
+        $publicPrefixes = ['/login', '/register', '/forgot-password'];
+        foreach ($publicPrefixes as $prefix) {
+            if (strpos($path, $prefix) === 0) {
+                return $handler->handle($request);
+            }
+        }
+
         if (!Session::getInstance()->isLoggedIn()) {
             $response = new Response();
             if ($request->isAjax()) {
@@ -20,6 +28,7 @@ class AuthMiddleware implements MiddlewareInterface
             }
             return $response->redirect('/login');
         }
+
         return $handler->handle($request);
     }
 }

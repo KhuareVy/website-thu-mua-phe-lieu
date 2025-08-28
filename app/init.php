@@ -15,13 +15,14 @@ if (session_status() === PHP_SESSION_NONE) {
 use App\Core\Application;
 use App\Core\Middleware\CsrfMiddleware;
 use App\Core\Middleware\CorsMiddleware;
-
+use \App\Core\Middleware\RateLimitMiddleware;
 
 $app = new Application(array_merge($appConfig, ['database' => $dbConfig]));
 
 // Add global middlewares
 $app->addMiddleware(new CorsMiddleware());
 $app->addMiddleware(new CsrfMiddleware());
+$app->addMiddleware(new RateLimitMiddleware());
 
 require dirname(__DIR__) . '/routes/web.php';
 
