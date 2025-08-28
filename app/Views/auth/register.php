@@ -22,7 +22,7 @@
                 <input type="hidden" name="_csrf_token" value="<?php echo htmlspecialchars($csrf_token ?? ($_SESSION['csrf_token'] ?? '')); ?>">
                 <div class="input-group">
                     <label for="name"><i class="fa fa-user"></i> Họ và tên</label>
-                    <input type="text" id="name" name="name" placeholder="Nhập họ và tên" required>
+                    <input type="text" id="full_name" name="full_name" placeholder="Nhập họ và tên" required>
                 </div>
                 <div class="input-group">
                     <label for="email"><i class="fa fa-envelope"></i> Email</label>
@@ -30,7 +30,7 @@
                 </div>
                 <div class="input-group">
                     <label for="phone"><i class="fa fa-phone"></i> Số điện thoại</label>
-                    <input type="text" id="phone" name="phone" placeholder="Nhập số điện thoại" required pattern="[0-9]{10,15}" title="Số điện thoại hợp lệ từ 10-15 số">
+                    <input type="text" id="phone_number" name="phone_number" placeholder="Nhập số điện thoại" required pattern="[0-9]{10,15}" title="Số điện thoại hợp lệ từ 10-15 số">
                 </div>
                 <div class="input-group">
                     <label for="password"><i class="fa fa-lock"></i> Mật khẩu</label>

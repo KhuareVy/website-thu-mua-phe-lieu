@@ -31,10 +31,10 @@ class AuthController extends Controller
         $csrf_token = $this->session->getCsrfToken();
         try {
             $data = $this->validate([
-                'name' => 'required',
+                'full_name' => 'required',
                 'email' => 'required|email',
-                'phone' => 'required',
-                'password' => 'required|min:6',
+                'phone_number' => 'required',
+                'password' => 'required|min:3',
             ]);
         } catch (\InvalidArgumentException $e) {
             $err = json_decode($e->getMessage(), true);
@@ -46,7 +46,7 @@ class AuthController extends Controller
             return $this->render('auth/register', ['error' => $err, 'csrf_token' => $csrf_token]);
         }
 
-        if (!preg_match('/^[0-9]{10,15}$/', $data['phone'])) {
+        if (!preg_match('/^[0-9]{10,15}$/', $data['phone_number'])) {
             return $this->render('auth/register', ['error' => 'Số điện thoại không hợp lệ', 'csrf_token' => $csrf_token]);
         }
 
@@ -54,7 +54,7 @@ class AuthController extends Controller
         if ($userModel->findByEmail($data['email'])) {
             return $this->render('auth/register', ['error' => 'Email đã tồn tại', 'csrf_token' => $csrf_token]);
         }
-        if ($userModel->findByPhone($data['phone'])) {
+        if ($userModel->findByPhone($data['phone_number'])) {
             return $this->render('auth/register', ['error' => 'Số điện thoại đã tồn tại', 'csrf_token' => $csrf_token]);
         }
 
@@ -89,7 +89,7 @@ class AuthController extends Controller
         }
 
         $this->session->set('user_id', $user['id']);
-        $this->session->set('user_name', $user['name']);
+        $this->session->set('user_name', $user['full_name']);
         $this->session->set('user_role', $user['role']);
 
         return $this->redirect('/');

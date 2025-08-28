@@ -189,7 +189,7 @@ class Application implements RequestHandlerInterface
      */
     private function handleRouteException(\Throwable $e): Response
     {
-        $statusCode = $e->getCode() ?: 500;
+    $statusCode = (int)($e->getCode() ?: 500);
         
         if ($this->request->isAjax()) {
             return $this->response->json([

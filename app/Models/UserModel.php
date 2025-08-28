@@ -10,21 +10,15 @@ class UserModel extends Model
     protected string $table = 'users';
     protected string $primaryKey = 'id';
     protected array $fillable = [
-        'name', 'email', 'phone', 'password', 'role'
+        'full_name', 'email', 'phone_number', 'password', 'role'
     ];
 
-    /**
-     * Tạo user mới (hash password tự động)
-     */
     public static function createUser(array $data): static
     {
         $data['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
         $data['role'] = $data['role'] ?? 'customer';
-        // Đổi key phone_number -> phone nếu có
-        if (isset($data['phone_number'])) {
-            $data['phone'] = $data['phone_number'];
-            unset($data['phone_number']);
-        }
+        $data['full_name'] = $data['full_name'];
+        $data['phone_number'] = $data['phone_number'];
         return static::create($data);
     }
 
@@ -45,7 +39,7 @@ class UserModel extends Model
      */
     public function findByPhone(string $phone): ?array
     {
-        $result = $this->where(['phone' => $phone]);
+        $result = $this->where(['phone_number' => $phone]);
         if (empty($result) || !isset($result[0])) {
             return null;
         }
