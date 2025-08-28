@@ -48,8 +48,8 @@ Dự án này là một hệ thống website MVC PHP thuần, phục vụ cho c�
 ## Tài khoản mẫu
 
 - Admin:
-  - Email: admin@example.com
-  - Mật khẩu: admin123
+  - Email: admin@thumuaphelieu.com
+  - Mật khẩu: admin
 - Khách hàng:
   - Đăng ký trực tiếp trên website
 
