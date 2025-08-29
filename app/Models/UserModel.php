@@ -13,18 +13,47 @@ class UserModel extends Model
         'full_name', 'email', 'phone_number', 'password', 'role'
     ];
 
-    public static function createUser(array $data): static
+    // Lấy tất cả user
+    public function getAll(): array
+    {
+        $users = $this->all();
+        return array_map(fn($u) => $u->toArray(), $users);
+    }
+
+    // Lấy user theo id
+    public function getById($id): ?array
+    {
+        $user = $this->find((int)$id);
+        return $user ? $user->toArray() : null;
+    }
+
+    // Tạo user mới
+    public function createUser(array $data): int
     {
         $data['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
         $data['role'] = $data['role'] ?? 'customer';
-        $data['full_name'] = $data['full_name'];
-        $data['phone_number'] = $data['phone_number'];
-        return static::create($data);
+        $user = self::create($data);
+        return $user->{$this->primaryKey} ?? 0;
     }
 
-    /**
-     * Tìm user theo email
-     */
+    // Cập nhật user
+    public function updateUser($id, array $data): bool
+    {
+        $user = $this->find((int)$id);
+        if (!$user) return false;
+        $user->fill($data);
+        return $user->save();
+    }
+
+    // Xóa user
+    public function deleteUser($id): bool
+    {
+        $user = $this->find((int)$id);
+        if (!$user) return false;
+        return $user->delete();
+    }
+
+    // Tìm user theo email
     public function findByEmail(string $email): ?array
     {
         $result = $this->where(['email' => $email]);
@@ -34,9 +63,7 @@ class UserModel extends Model
         return $result[0]->toArray();
     }
 
-    /**
-     * Tìm user theo số điện thoại
-     */
+    // Tìm user theo số điện thoại
     public function findByPhone(string $phone): ?array
     {
         $result = $this->where(['phone_number' => $phone]);
