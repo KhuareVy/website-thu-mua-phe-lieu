@@ -1,15 +1,18 @@
 <?php
-
 use App\Controllers\AuthController;
 use App\Controllers\HomeController;
 use App\Controllers\AdminController;
+use App\Controllers\ScrapController;
 use App\Core\Middleware\AuthMiddleware;
 use App\Core\Middleware\RoleMiddleware;
+use \App\Controllers\PurchaseController;
 
 $router = $app->getRouter();
 
 // Public routes
 $router->get('/', HomeController::class . '@home');
+
+$router->post('/submit-sell-request', PurchaseController::class . '@submitSellRequest');
 
 $router->get('/login', AuthController::class . '@showLogin');
 $router->post('/login', AuthController::class . '@login');
