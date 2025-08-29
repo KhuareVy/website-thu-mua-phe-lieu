@@ -75,5 +75,7 @@
     lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
   });
   </script>
+  <script src="../../assets/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="/assets/js/modal_sell_form.js"></script>
 </body>
 </html>

@@ -1,10 +1,11 @@
+<?php include __DIR__ . '/partials/modal_sell_form.php'; ?>
 <!-- Nội dung trang chủ, KHÔNG có thẻ html/head/body, chỉ include vào layout -->
 <section class="banner" aria-labelledby="hero-title">
   <div class="banner-content">
     <h2 class="h2_t">CÔNG TY THU MUA PHẾ LIỆU GIÁ CAO</h2>
     <h1 id="hero-title">MINH HẢI KHƯƠNG</h1>
     <p class="highlight">Hoa hồng tích lũy lên tới <strong>1 TỶ ĐỒNG</strong></p>
-      <button class="float-btn" id="open-buy-modal" type="button">💸 Mua phế liệu</button>
+    <a href="tel:0999999999" class="cta-button" aria-label="Gọi điện ngay để được tư vấn">
       <span aria-hidden="true">📞</span> GỌI NGAY
     </a>
   </div>
@@ -198,7 +199,7 @@ Nhà máy phế liệu Minh Hải Khương nhận mua phế liệu miền Nam ra
 ?>
 <div class="floating-sidebar">
   <?php if ($session->has('user_id')): ?>
-    <a href="/post/create" class="float-btn">📝 Bán phế liệu</a>
+  <a href="/scrap/sell" class="float-btn" data-bs-toggle="modal" data-bs-target="#sellScrapModal">📝 Bán phế liệu</a>
     <a href="/buy" class="float-btn">💸 Mua phế liệu</a>
     <a href="<?= htmlspecialchars($profileLink) ?>" class="float-btn">👤 <?= htmlspecialchars((string) $userName) ?></a>
     <a href="/logout" class="float-btn">🔑 Đăng xuất</a>

@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+<?php
+use App\Core\Session;
+$csrfToken = Session::getInstance()->getCsrfToken();
+?>
   <!-- Meta tags cơ bản -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -40,6 +44,7 @@
   <link rel="preload" href="../../assets/images/mhk-logo-fit.png" as="image">
   <!-- CSS -->
   <link rel="stylesheet" href="../../assets/css/home.css">
+  <link rel="stylesheet" href="../../assets/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" 
         integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ==" 
         crossorigin="anonymous" 
@@ -74,14 +79,19 @@
         </div>
       </div>
     </div>
+    <?php
+      use App\Models\ScrapTypeModel;
+      $categoryModel = new ScrapTypeModel();
+  $categories = $categoryModel->all(); // Lấy tất cả category dạng đối tượng
+    ?>
     <nav class="bottom-menu" role="navigation" aria-label="Menu sản phẩm">
-      <a href="#phe-lieu-sat">PHẾ LIỆU SẮT</a>
-      <a href="#phe-lieu-dong">PHẾ LIỆU ĐỒNG</a>
-      <a href="#phe-lieu-inox">PHẾ LIỆU INOX</a>
-      <a href="#phe-lieu-nhom">PHẾ LIỆU NHÔM</a>
-      <a href="#phe-lieu-thiec">PHẾ LIỆU THIẾC</a>
-      <a href="#phe-lieu-chi">PHẾ LIỆU CHÌ</a>
-      <a href="#phe-lieu-nhua">PHẾ LIỆU NHỰA</a>
-      <a href="#phe-lieu-giay">PHẾ LIỆU GIẤY</a>
+      <?php if (!empty($categories)): ?>
+        <?php foreach ($categories as $cat): ?>
+          <?php $catArr = method_exists($cat, 'toArray') ? $cat->toArray() : (array)$cat; ?>
+          <a href="/scrap?category=<?= htmlspecialchars($catArr['id']) ?>">
+            Phế liệu <?= htmlspecialchars($catArr['name']) ?>
+          </a>
+        <?php endforeach; ?>
+      <?php endif; ?>
     </nav>
   </header>
