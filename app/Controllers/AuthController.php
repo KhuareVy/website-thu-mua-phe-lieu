@@ -63,7 +63,7 @@ class AuthController extends Controller
         }
 
         // Tạo user mới, tự động hash password
-        UserModel::createUser($data);
+        $userModel->createUser($data);
         return $this->redirect('/login');
     }
 
