@@ -11,7 +11,11 @@ class SaleOrderDetailModel extends Model
         'sale_order_id',
         'scrap_id',
         'quantity',
+        'id',
         'price_per_unit',
         'sub_total',
+        'unit_price',
+        'total_price',
+        'created_at',
     ];
 }

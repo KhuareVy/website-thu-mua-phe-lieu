@@ -3,15 +3,12 @@ namespace App\Models;
 
 use App\Core\Model;
 
-class ScrapTypeModel extends Model
+class ProvinceModel extends Model
 {
-    protected string $table = 'scrap_types';
+    protected string $table = 'provinces';
     protected string $primaryKey = 'id';
     protected array $fillable = [
         'id',
         'name',
-        'slug',
-        'is_active',
-        'created_at',
     ];
 }

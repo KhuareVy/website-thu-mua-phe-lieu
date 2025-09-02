@@ -10,7 +10,13 @@ class UserModel extends Model
     protected string $table = 'users';
     protected string $primaryKey = 'id';
     protected array $fillable = [
-        'full_name', 'email', 'phone_number', 'password', 'role'
+        'id',
+        'email',
+        'password',
+        'role',
+        'is_active',
+        'created_at',
+        'updated_at',
     ];
 
     // Lấy tất cả user
@@ -63,13 +69,5 @@ class UserModel extends Model
         return $result[0]->toArray();
     }
 
-    // Tìm user theo số điện thoại
-    public function findByPhone(string $phone): ?array
-    {
-        $result = $this->where(['phone_number' => $phone]);
-        if (empty($result) || !isset($result[0])) {
-            return null;
-        }
-        return $result[0]->toArray();
-    }
+    // ...existing code...
 }

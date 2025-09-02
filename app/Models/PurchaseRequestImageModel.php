@@ -8,7 +8,9 @@ class PurchaseRequestImageModel extends Model
     protected string $table = 'purchase_request_images';
     protected string $primaryKey = 'id';
     protected array $fillable = [
-        'purchase_request_id',
+        'id',
+        'request_id',
         'image_url',
+        'uploaded_at',
     ];
 }

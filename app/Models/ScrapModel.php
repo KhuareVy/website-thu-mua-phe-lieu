@@ -8,31 +8,17 @@ class ScrapModel extends Model
     protected string $table = 'scraps';
     protected string $primaryKey = 'id';
     protected array $fillable = [
+        'id',
         'scrap_type_id',
         'name',
+        'slug',
         'description',
         'image_url',
         'unit',
-        'is_buyable',
         'is_sellable',
-        'buy_price',
-        'sell_price',
+        'is_buyable',
+        'is_active',
+        'created_at',
+        'updated_at',
     ];
-    /**
-     * Lấy tất cả loại phế liệu (dạng mảng cho view card)
-     */
-    public function getAllForCards(): array
-    {
-        // Sử dụng all() từ Model, trả về mảng
-        return array_map(fn($item) => $item->toArray(), $this->all());
-    }
-
-    /**
-     * Lấy loại phế liệu theo danh mục (dạng mảng cho view card)
-     */
-    public function getByCategoryForCards(int $categoryId): array
-    {
-        $rows = $this->where(['scrap_category_id' => $categoryId]);
-        return array_map(fn($item) => $item->toArray(), $rows);
-    }
 }
