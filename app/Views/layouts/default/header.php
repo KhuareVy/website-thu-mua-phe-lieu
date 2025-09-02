@@ -60,8 +60,6 @@ $csrfToken = Session::getInstance()->getCsrfToken();
       </div>
       <nav class="main-nav" role="navigation" aria-label="Menu chính">
         <a href="#bang-gia" aria-label="Xem bảng giá phế liệu hôm nay">BẢNG GIÁ PHẾ LIỆU HÔM NAY</a>
-        <a href="#tin-tuc" aria-label="Đọc tin tức mới nhất">TIN TỨC</a>
-        <a href="#thanh-ly" aria-label="Xem hàng thanh lý">THANH LÝ HÀNG TỒN</a>
         <a href="#gioi-thieu" aria-label="Tìm hiểu về công ty">GIỚI THIỆU CÔNG TY</a>
         <a href="#lien-he" aria-label="Liên hệ với chúng tôi">LIÊN HỆ</a>
       </nav>
