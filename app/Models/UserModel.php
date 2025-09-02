@@ -36,10 +36,10 @@ class UserModel extends Model
     // Tạo user mới
     public function createUser(array $data): int
     {
-        $data['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
-        $data['role'] = $data['role'] ?? 'customer';
-        $user = self::create($data);
-        return $user->{$this->primaryKey} ?? 0;
+    $data['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
+    $data['role'] = $data['role'] ?? 'customer';
+    $user = $this->create($data);
+    return $user->{$this->primaryKey} ?? 0;
     }
 
     // Cập nhật user
@@ -68,6 +68,4 @@ class UserModel extends Model
         }
         return $result[0]->toArray();
     }
-
-    // ...existing code...
 }

@@ -7,6 +7,7 @@ use App\Core\Controller;
 use App\Core\Request;
 use App\Core\Response;
 use App\Models\UserModel;
+use App\Models\CustomerModel;
 
 class AuthController extends Controller
 {
@@ -33,37 +34,60 @@ class AuthController extends Controller
     {
         $this->setLayout();
         $csrf_token = $this->session->getCsrfToken();
-        try {
-            $data = $this->validate([
-                'full_name' => 'required',
-                'email' => 'required|email',
-                'phone_number' => 'required',
-                'password' => 'required|min:3',
-            ]);
-        } catch (\InvalidArgumentException $e) {
-            $err = json_decode($e->getMessage(), true);
-            if (is_array($err)) {
-                $err = empty($err) ? 'Có lỗi dữ liệu.' : implode('<br>', array_map('htmlspecialchars', array_values($err)));
-            } else {
-                $err = htmlspecialchars((string)$err);
-            }
-            return $this->render('auth/register', ['error' => $err, 'csrf_token' => $csrf_token]);
+        // Validate dữ liệu đầu vào
+        $data = [
+            'full_name' => trim($this->input('full_name')),
+            'email' => trim($this->input('email')),
+            'phone_number' => trim($this->input('phone_number')),
+            'password' => $this->input('password'),
+        ];
+        $error = '';
+        if ($data['full_name'] === '' || $data['email'] === '' || $data['phone_number'] === '' || $data['password'] === '') {
+            $error = 'Vui lòng nhập đầy đủ thông tin.';
+        } elseif (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+            $error = 'Email không hợp lệ.';
+        } elseif (!preg_match('/^[0-9]{10,15}$/', $data['phone_number'])) {
+            $error = 'Số điện thoại không hợp lệ.';
+        } elseif (strlen($data['password']) < 3) {
+            $error = 'Mật khẩu phải từ 3 ký tự.';
         }
-
-        if (!preg_match('/^[0-9]{10,15}$/', $data['phone_number'])) {
-            return $this->render('auth/register', ['error' => 'Số điện thoại không hợp lệ', 'csrf_token' => $csrf_token]);
+        if ($error) {
+            return $this->render('auth/register', ['error' => $error, 'csrf_token' => $csrf_token]);
         }
 
         $userModel = new UserModel();
         if ($userModel->findByEmail($data['email'])) {
             return $this->render('auth/register', ['error' => 'Email đã tồn tại', 'csrf_token' => $csrf_token]);
         }
-        if ($userModel->findByPhone($data['phone_number'])) {
+        $customerModel = new CustomerModel();
+        if ($customerModel->findByPhone($data['phone_number'])) {
             return $this->render('auth/register', ['error' => 'Số điện thoại đã tồn tại', 'csrf_token' => $csrf_token]);
         }
 
-        // Tạo user mới, tự động hash password
-        $userModel->createUser($data);
+        // Tạo user
+        $user_id = $userModel->createUser([
+            'email' => $data['email'],
+            'password' => $data['password'],
+        ]);
+        if (!$user_id) {
+            error_log('Đăng ký: Không tạo được user. Dữ liệu: ' . json_encode($data));
+            return $this->render('auth/register', ['error' => 'Không thể tạo tài khoản, vui lòng thử lại.', 'csrf_token' => $csrf_token]);
+        }
+
+        // Tạo customer
+        $customer_data = [
+            'user_id' => (int)$user_id,
+            'full_name' => $data['full_name'],
+            'phone_number' => $data['phone_number'],
+        ];
+        $customer_id = $customerModel->createCustomer($customer_data);
+        if (!$customer_id) {
+            error_log('Đăng ký: Không tạo được customer. Dữ liệu: ' . json_encode($customer_data));
+            $userModel->deleteUser($user_id);
+            return $this->render('auth/register', ['error' => 'Không thể lưu thông tin khách hàng, vui lòng thử lại.', 'csrf_token' => $csrf_token]);
+        }
+
+        error_log('Đăng ký thành công: user_id=' . $user_id . ', customer_id=' . $customer_id);
         return $this->redirect('/login');
     }
 
