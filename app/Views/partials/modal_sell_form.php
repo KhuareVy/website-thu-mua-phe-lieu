@@ -21,7 +21,16 @@
 							<input type="tel" class="form-control" id="phone" name="customer_phone" pattern="^0\d{9,10}$" required style="border-radius: 12px; border: 2px solid var(--gray-light, #e9ecef);">
 							<div class="invalid-feedback">Vui lòng nhập số điện thoại hợp lệ (10-11 số, bắt đầu bằng 0).</div>
 						</div>
-						<div class="col-12">
+						<div class="col-md-6">
+							<label for="province" class="form-label fw-semibold" style="color: var(--dark-blue, #26264c);">Tỉnh/Thành <span class="text-danger">*</span></label>
+							<select class="form-select" id="province" name="province" required style="border-radius: 12px; border: 2px solid var(--gray-light, #e9ecef);">
+								<option value="">-- Chọn tỉnh/thành --</option>
+								<option value="Hà Nội">Hà Nội</option>
+								<option value="TP Hồ Chí Minh">TP Hồ Chí Minh</option>
+							</select>
+							<div class="invalid-feedback">Vui lòng chọn tỉnh/thành.</div>
+						</div>
+						<div class="col-md-6">
 							<label for="address" class="form-label fw-semibold" style="color: var(--dark-blue, #26264c);">Địa chỉ <span class="text-danger">*</span></label>
 							<input type="text" class="form-control" id="address" name="customer_address" required style="border-radius: 12px; border: 2px solid var(--gray-light, #e9ecef);">
 							<div class="invalid-feedback">Vui lòng nhập địa chỉ.</div>
