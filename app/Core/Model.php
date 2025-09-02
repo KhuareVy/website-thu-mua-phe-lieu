@@ -75,17 +75,25 @@ abstract class Model
     public function save(): bool
     {
         $data = $this->getFillableData();
-
-        if (empty($this->attributes[$this->primaryKey])) {
+        $pk = $this->primaryKey;
+        $pkValue = $this->attributes[$pk] ?? null;
+        $exists = false;
+        if ($pkValue !== null) {
+            // Kiểm tra bản ghi đã tồn tại chưa
+            $sql = "SELECT COUNT(*) FROM {$this->table} WHERE {$pk} = :pk";
+            $count = $this->db->fetch($sql, ['pk' => $pkValue]);
+            $exists = $count ? (reset($count) > 0) : false;
+        }
+        if ($pkValue === null || !$exists) {
             // Insert
             $id = $this->db->insert($this->table, $data);
-            $this->attributes[$this->primaryKey] = $id;
-            return $id > 0;
+            $this->attributes[$pk] = $id ?: $pkValue;
+            return $id > 0 || $pkValue !== null;
         }
-
         // Update
-        $where = [$this->primaryKey => $this->attributes[$this->primaryKey]];
-        return $this->db->update($this->table, $data, $where) > 0;
+        $where = [$pk => $pkValue];
+        $result = $this->db->update($this->table, $data, $where);
+        return $result > 0;
     }
 
     public function delete(): bool
@@ -99,10 +107,10 @@ abstract class Model
 
     public static function create(array $data): static
     {
-        $instance = new static();
-        $instance->fill($data);
-        $instance->save();
-        return $instance;
+    $instance = new static();
+    $instance->fill($data);
+    $instance->save();
+    return $instance;
     }
 
     /* =====================
