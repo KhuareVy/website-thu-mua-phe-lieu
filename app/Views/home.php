@@ -190,12 +190,48 @@ Nhà máy phế liệu Minh Hải Khương nhận mua phế liệu miền Nam ra
     </section>
 
 <?php
-  use App\Core\Session;
-  $session = Session::getInstance();
-  $userData = $session->get('user_data');
-  $userName = $userData['full_name'] ?? 'Tài khoản';
-  $userRole = $userData['role'] ?? null;
-  $profileLink = ($userRole === 'admin') ? '/dashboard' : '/404';
+use App\Core\Session;
+$session = Session::getInstance();
+$userData = $session->get('user_data');
+$userId = $session->get('user_id');
+$userRole = $userData['role'] ?? null;
+$profileLink = ($userRole === 'admin') ? '/dashboard' : '/404';
+
+$userName = 'Tài khoản';
+if ($userRole === 'customer') {
+  // Lấy tên khách hàng từ CustomerModel
+  if ($userId) {
+    try {
+      $customerModel = new \App\Models\CustomerModel();
+      $customer = $customerModel->getById((int)$userId);
+      if ($customer && !empty($customer['full_name'])) {
+        $userName = $customer['full_name'];
+      }
+    } catch (\Throwable $e) {}
+  }
+} elseif ($userRole === 'staff') {
+  // Lấy tên nhân viên từ StaffModel
+  if ($userId) {
+    try {
+      $staffModel = new \App\Models\StaffModel();
+      $staff = $staffModel->getById((int)$userId);
+      if ($staff && !empty($staff['full_name'])) {
+        $userName = $staff['full_name'];
+      }
+    } catch (\Throwable $e) {}
+  }
+} elseif ($userRole === 'admin') {
+  // Lấy tên admin từ StaffModel
+  if ($userId) {
+    try {
+      $staffModel = new \App\Models\StaffModel();
+      $staff = $staffModel->getById((int)$userId);
+      if ($staff && !empty($staff['full_name'])) {
+        $userName = $staff['full_name'];
+      }
+    } catch (\Throwable $e) {}
+  }
+}
 ?>
 <div class="floating-sidebar">
   <?php if ($session->has('user_id')): ?>
